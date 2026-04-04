@@ -150,3 +150,62 @@ fun transferMoney(senderID: Int, receiverID: Int, amount: Int) {
         println("Error: Sender or Receiver not found!")
     }
 }
+
+
+/**
+------
+Customer Emir added to system with a balance of 0.
+------
+
+------
+Customer Can added to system with a balance of 1000.
+------
+
+--- CUSTOMER INFORMATION ---
+Customer Name: Can - Balance: 1000
+
+--- CUSTOMER LIST ---
+1. Customer ID: 0 - Name: Emir - Balance: 0
+2. Customer ID: 1 - Name: Can - Balance: 1000
+
+--- DEPOSIT ---
+Customer not found!
+
+--- DEPOSIT ---
+Customer not found!
+
+--- DEPOSIT ---
+Customer not found!
+
+--- WITHDRAW ---
+Customer not found!
+
+--- WITHDRAW ---
+Customer not found!
+
+--- WITHDRAW ---
+Customer not found!
+
+--- WITHDRAW ---
+Customer not found!
+
+--- MONEY TRANSFER ---
+500 transferred from Can to Emir successfully.
+Can New Balance: 500
+Emir New Balance: 500
+
+--- MONEY TRANSFER ---
+500 transferred from Can to Emir successfully.
+Can New Balance: 0
+Emir New Balance: 1000
+
+--- MONEY TRANSFER ---
+Error: Can has not enough money!
+
+--- MONEY TRANSFER ---
+Error: Sender or Receiver not found!
+
+--- MONEY TRANSFER ---
+Error: Sender or Receiver not found!
+
+**/
