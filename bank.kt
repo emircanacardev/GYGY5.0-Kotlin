@@ -32,7 +32,6 @@ fun main()
     transferMoney(1,0,500)
     transferMoney(2,0,500)
     transferMoney(1,2,500)
-
 }
 
 
@@ -49,8 +48,8 @@ fun createCustomer(customerName: String, balance: Int = 0)
     println("Customer $customerName added to system with a balance of $balance.")
 
     println("------")
-
 }
+
 
 //indexleri müşteri id'si olarak düşündüm ve her müşteri eklediğimde bunun 0'dan sırayla ve doğru bir şekilde ilerleyeceğini varsaydım
 fun getCustomerList()
@@ -152,7 +151,8 @@ fun transferMoney(senderID: Int, receiverID: Int, amount: Int) {
 }
 
 
-/**
+/** OUTPUT
+
 ------
 Customer Emir added to system with a balance of 0.
 ------
