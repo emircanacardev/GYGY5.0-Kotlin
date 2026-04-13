@@ -1,3 +1,5 @@
+//Polymorphism
+
 // Turnike (Kiosk) örneği: Aynı komut, farklı sınıflarda farklı çalışır.
 
 // Ortak arayüzümüz (Sözleşme)

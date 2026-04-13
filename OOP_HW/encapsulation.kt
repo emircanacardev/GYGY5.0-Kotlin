@@ -1,3 +1,5 @@
+//Encapsulation
+
 // Banka hesabı örneği: Bakiye gizlenir, kontrollü erişim sağlanır.
 
 class BankAccount(initialBalance: Double) {

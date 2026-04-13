@@ -1,3 +1,5 @@
+//Abstraction
+
 // Mesajlaşma altyapısı örneği: Bağımlılıkları tersine çevirme ve gizleme.
 
 // Arayüz katmanının (UI) bileceği tek şey bu arayüzdür.

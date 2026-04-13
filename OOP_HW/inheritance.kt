@@ -1,3 +1,5 @@
+//Inheritance
+
 // Araç örneği: Ortak özellikler miras alınır, kod tekrarı önlenir.
 
 // Üst (Parent) Sınıf. 'open' kelimesi miras alınabileceğini belirtir.
