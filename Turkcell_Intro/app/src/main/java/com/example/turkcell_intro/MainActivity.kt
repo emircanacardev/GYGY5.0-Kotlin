@@ -1,9 +1,10 @@
-package com.example.turkcellintro
+package com.example.turkcell_intro
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
@@ -21,19 +23,33 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.navigation.compose.rememberNavController
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController;
+import com.example.turkcell_intro.model.Todo
+import com.example.turkcell_intro.viewmodel.ToDoListViewModel
+import io.github.jan.supabase.createSupabaseClient
+import io.github.jan.supabase.postgrest.Postgrest
+import io.github.jan.supabase.postgrest.postgrest
 
 // Burada ekran tanımlarını yap.
 sealed class Screen(val route: String) {
     data object Register: Screen("register")
+    data object Homepage: Screen("homepage")
 }
 
+// Telefon çevirildiği an => Yeniden başlatılır.
 class MainActivity : ComponentActivity() {
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -48,25 +64,44 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MyNavigatableApp(modifier: Modifier) {
     val navController = rememberNavController()
+    // Magic String
+    Column() {
+        NavHost(navController=navController, startDestination = Screen.Homepage.route){
+            composable(Screen.Register.route) { RegisterScreen(modifier, navController) }
+            composable(Screen.Homepage.route) { Homepage(modifier) }
+        }
+    }
 }
 
 @Composable
-fun MyAppStart(modifier: Modifier)
+fun Homepage(modifier: Modifier)
 {
-    // State'i tanımla ki..
-    // ikisi de burayı okuyabilsin-değiştirebilsin..
-    var toDoList = remember { mutableStateListOf("Veri 1", "Veri 2","Veri 3") }
+    val todoViewModel: ToDoListViewModel = viewModel()
 
+    val todos by todoViewModel.todos.collectAsState()
+    val isLoading by todoViewModel.isLoading.collectAsState()
+    val error by todoViewModel.error.collectAsState()
 
-    Column(modifier = modifier.fillMaxSize()) {
-        Text("Kayıt Ol Sayfasına Git")
-        AddToDo(onAdd = {text -> toDoList.add(text)}) // child 1
-        ToDoList(toDoList, onDelete = {i -> toDoList.removeAt(i)}) // child 2
+    // TODO: 1. Silme işlemi sonrası veriyi yenile.
+    // TODO: 2. Ekleme işlemi sayfası yap, ekleme sonrası yine veri yenilensin.
+    Column(modifier= modifier.fillMaxSize()){
+        when {
+            isLoading -> {Text("Yükleniyor")}
+            error != null -> {Text("Hata aldı: $error")}
+            else -> {
+                ToDoList(todos, onDelete = { id -> todoViewModel.delete(id) })
+            }
+        }
+        Button(onClick = {}) {
+            Text("Tıkla")
+        }
     }
 }
-// State Hoisting -> State'i child(lar)dan alıp parent'a taşımak.
 
-// State aynı
+
+
+
+
 @Composable
 fun AddToDo(onAdd: (String) -> Unit) {
     var text = remember { mutableStateOf("abc") }
@@ -89,7 +124,7 @@ fun AddToDo(onAdd: (String) -> Unit) {
 }
 // State aynı
 @Composable
-fun ToDoList(toDoList: List<String>, onDelete: (Int) -> Unit) {
+fun ToDoList(toDoList: List<Todo>, onDelete: (Int) -> Unit) {
 
     LazyColumn(modifier = Modifier.fillMaxSize())
     {
@@ -98,9 +133,10 @@ fun ToDoList(toDoList: List<String>, onDelete: (Int) -> Unit) {
             Row(modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically) {
-                Text(todo)
+                Text(todo.id.toString())
+                Text(todo.title)
                 IconButton(onClick = {
-                    onDelete(index)
+                    onDelete(todo.id)
                 }) {
                     Icon(imageVector = Icons.Default.Close, contentDescription = "Sil")
                 }
