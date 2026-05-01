@@ -3,11 +3,15 @@ package com.example.libraryapp.data.repository
 import com.example.libraryapp.data.model.Book
 import com.example.libraryapp.data.supabase.supabase
 import io.github.jan.supabase.postgrest.postgrest
+import io.github.jan.supabase.postgrest.query.Order // Bunu eklemeyi unutma bro
 
 class BookRepository {
+    // Tüm kitapları getirirken isme göre (A-Z) sabitledik
     suspend fun getAllBooks(): Result<List<Book>> = runCatching {
         supabase.postgrest["books"]
-            .select()
+            .select {
+                order("title", order = Order.ASCENDING)
+            }
             .decodeList<Book>()
     }
 
@@ -33,11 +37,13 @@ class BookRepository {
         }
     }
 
-     suspend fun searchBooks(query: String): Result<List<Book>> = runCatching {
+    // Arama sonuçlarını da sabit bir sırada getiriyoruz
+    suspend fun searchBooks(query: String): Result<List<Book>> = runCatching {
         supabase.postgrest["books"].select {
             filter {
                 ilike("title", "%$query%")
             }
+            order("title", order = Order.ASCENDING)
         }.decodeList<Book>()
     }
 }
