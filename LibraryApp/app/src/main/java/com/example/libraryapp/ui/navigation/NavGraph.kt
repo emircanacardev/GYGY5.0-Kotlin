@@ -11,10 +11,12 @@ import com.example.libraryapp.ui.screen.auth.RegisterScreen
 import com.example.libraryapp.ui.screen.HomeScreen
 import com.example.libraryapp.ui.screen.LoginScreen
 import com.example.libraryapp.ui.viewmodel.AuthViewModel
+import com.example.libraryapp.ui.viewmodel.BookViewModel
 
 @Composable
 fun NavGraph(navController: NavHostController = rememberNavController()) {
     val authViewModel: AuthViewModel = viewModel()
+    val bookViewModel: BookViewModel = viewModel()
 
     NavHost(navController = navController, startDestination = Screen.Login.route)
     {
@@ -28,13 +30,18 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
             },
             authViewModel
         ) }
+        // ÖDEV 1: Kayıt ol'a success yapısı kurulacak.
         composable(Screen.Register.route) { RegisterScreen(
-            onNavigateToLogin = { navController.navigate(Screen.Login.route) },
+            onNavigateToLogin = {
+                // MİNİMUM DEĞİŞİKLİK: Login ekranına geçerken Register ekranını yığından uçuruyoruz.
+                navController.navigate(Screen.Login.route) {
+                    popUpTo(Screen.Register.route) { inclusive = true }
+                }
+            },
             authViewModel
         ) }
         composable(Screen.Homepage.route) {
-            HomeScreen()
+            HomeScreen(authViewModel, bookViewModel)
         }
     }
 }
-

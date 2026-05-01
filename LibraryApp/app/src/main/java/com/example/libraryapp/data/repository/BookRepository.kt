@@ -11,13 +11,33 @@ class BookRepository {
             .decodeList<Book>()
     }
 
-    suspend fun getBookById(id:String): Result<Book> = runCatching {
+    suspend fun getBookById(id: String): Result<Book> = runCatching {
         supabase.postgrest["books"]
-            .select { filter { eq("id",id) } }
+            .select { filter { eq("id", id) } }
             .decodeSingle<Book>()
     }
 
     suspend fun addBook(book: Book): Result<Unit> = runCatching {
         supabase.postgrest["books"].insert(book)
+    }
+
+    suspend fun updateBook(id: String, book: Book): Result<Unit> = runCatching {
+        supabase.postgrest["books"].update(book) {
+            filter { eq("id", id) }
+        }
+    }
+
+    suspend fun deleteBook(id: String): Result<Unit> = runCatching {
+        supabase.postgrest["books"].delete {
+            filter { eq("id", id) }
+        }
+    }
+
+     suspend fun searchBooks(query: String): Result<List<Book>> = runCatching {
+        supabase.postgrest["books"].select {
+            filter {
+                ilike("title", "%$query%")
+            }
+        }.decodeList<Book>()
     }
 }

@@ -64,8 +64,7 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.ktor.client.android)
     implementation(libs.kotlinx.serialization.json)
-
-
+    implementation("androidx.compose.material:material-icons-extended:1.6.0")
 
     implementation(libs.supabase.bom)
     implementation(libs.supabase.postgrest)
