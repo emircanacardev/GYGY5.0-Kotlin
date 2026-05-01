@@ -1,6 +1,5 @@
 package com.example.libraryapp.ui.screen.auth
 
-import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
@@ -9,44 +8,29 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.libraryapp.ui.viewmodel.AuthState
 import com.example.libraryapp.ui.viewmodel.AuthViewModel
 
 @Composable
-fun RegisterScreen() {
-    val authViewModel: AuthViewModel = viewModel()
+fun RegisterScreen(
+    onNavigateToLogin: () -> Unit,
+    authViewModel: AuthViewModel
+) {
     val authState by authViewModel.authState.collectAsState()
-
-    val context = LocalContext.current
-
-    var fullName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var confirmPassword by remember { mutableStateOf("") }
-    var studentNo by remember { mutableStateOf("") } // Öğrenci no geri geldi
+    var fullName by remember { mutableStateOf("") }
+    var studentNo by remember { mutableStateOf("") }
 
     LaunchedEffect(authState) {
-        when (authState) {
-            is AuthState.Success -> {
-                Toast.makeText(context, "Registration successful!", Toast.LENGTH_SHORT).show()
-                fullName = ""
-                email = ""
-                password = ""
-                confirmPassword = ""
-                studentNo = ""
-            }
-            is AuthState.Error -> {
-                val errorMessage = (authState as AuthState.Error).message
-                Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
-            }
-            else -> {}
+        if (authState is AuthState.Success) {
+            onNavigateToLogin()
+            authViewModel.resetState()
         }
     }
 
@@ -59,7 +43,7 @@ fun RegisterScreen() {
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "Sign Up",
+            text = "Kayıt Ol",
             fontSize = 26.sp,
             fontWeight = FontWeight.Bold
         )
@@ -68,7 +52,7 @@ fun RegisterScreen() {
         OutlinedTextField(
             value = fullName,
             onValueChange = { fullName = it },
-            label = { Text("Full Name") },
+            label = { Text("Ad Soyad") },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true
         )
@@ -77,7 +61,7 @@ fun RegisterScreen() {
         OutlinedTextField(
             value = email,
             onValueChange = { email = it },
-            label = { Text("Email Address") },
+            label = { Text("E-posta") },
             modifier = Modifier.fillMaxWidth(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
             singleLine = true
@@ -87,7 +71,7 @@ fun RegisterScreen() {
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
-            label = { Text("Password") },
+            label = { Text("Şifre") },
             modifier = Modifier.fillMaxWidth(),
             visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -95,63 +79,58 @@ fun RegisterScreen() {
         )
         Spacer(modifier = Modifier.height(12.dp))
 
-        OutlinedTextField(
-            value = confirmPassword,
-            onValueChange = { confirmPassword = it },
-            label = { Text("Confirm Password") },
-            modifier = Modifier.fillMaxWidth(),
-            visualTransformation = PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-            singleLine = true
-        )
-        Spacer(modifier = Modifier.height(12.dp))
-
-        // Öğrenci Numarası Alanı
         OutlinedTextField(
             value = studentNo,
             onValueChange = { studentNo = it },
-            label = { Text("Student Number (Optional)") },
+            label = { Text("Öğrenci No (opsiyonel)") },
             modifier = Modifier.fillMaxWidth(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             singleLine = true
         )
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(24.dp))
+
+        if (authState is AuthState.Error) {
+            Text(
+                text = (authState as AuthState.Error).message,
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.padding(bottom = 12.dp)
+            )
+        }
+
+        if (authState is AuthState.Success) {
+            Text(
+                text = "Kayıt Başarılı! Yönlendiriliyorsunuz...",
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(bottom = 12.dp)
+            )
+        }
 
         Button(
             onClick = {
-                // Sadece zorunlu alanlar için boşluk kontrolü
-                if (email.isNotBlank() && password.isNotBlank() && confirmPassword.isNotBlank() && fullName.isNotBlank()) {
-                    if (password == confirmPassword) {
-                        authViewModel.signUp(
-                            email = email.trim(),
-                            password = password,
-                            fullName = fullName.trim(),
-                            studentNo = studentNo.trim().ifEmpty { null } // Öğrenci no da gönderiliyor
-                        )
-                    } else {
-                        Toast.makeText(context, "Passwords do not match!", Toast.LENGTH_SHORT).show()
-                    }
-                } else {
-                    Toast.makeText(context, "Please fill in all required fields.", Toast.LENGTH_SHORT).show()
-                }
+                authViewModel.signUp(
+                    email = email.trim(),
+                    password = password,
+                    fullName = fullName.trim(),
+                    studentNo = studentNo.trim().ifEmpty { null }
+                )
             },
-            modifier = Modifier.fillMaxWidth().height(50.dp),
-            enabled = authState !is AuthState.Loading
+            modifier = Modifier.fillMaxWidth(),
+            enabled = authState !is AuthState.Loading && authState !is AuthState.Success
         ) {
             if (authState is AuthState.Loading) {
                 CircularProgressIndicator(
-                    modifier = Modifier.size(24.dp),
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    strokeWidth = 2.dp
+                    modifier = Modifier.size(20.dp),
+                    strokeWidth = 2.dp,
+                    color = MaterialTheme.colorScheme.onPrimary
                 )
             } else {
-                Text("Sign Up", fontSize = 16.sp)
+                Text("Kayıt Ol")
             }
         }
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
-        TextButton(onClick = { /* Navigasyon için boş bırakıldı */ }) {
-            Text("Already have an account? Sign in.")
+        TextButton(onClick = {onNavigateToLogin()}) {
+            Text("Zaten hesabın var mı? Giriş Yap")
         }
     }
 }

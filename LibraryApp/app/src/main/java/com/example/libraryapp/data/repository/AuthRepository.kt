@@ -1,10 +1,10 @@
 package com.example.libraryapp.data.repository
 
+import com.example.libraryapp.data.model.Profile
 import com.example.libraryapp.data.supabase.supabase
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.providers.builtin.Email
-import kotlinx.coroutines.delay
-import kotlin.random.Random
+import io.github.jan.supabase.postgrest.postgrest
 
 class AuthRepository
 {
@@ -27,7 +27,20 @@ class AuthRepository
         }
 
         val userId = supabase.auth.currentUserOrNull()?.id ?: error("Kullanıcı bulunamadı")
-        println(userId)
-        // Bu userId'i al kendi tablona yaz, profil ile userı bağla.
+
+        supabase.postgrest["profiles"].insert(
+            Profile(userId, "student", fullName, studentNo)
+        )
     }
+
+    fun getCurrentUserId() : String?
+    {
+        return supabase.auth.currentUserOrNull()?.id;
+    }
+
+    suspend fun getProfile(userId: String): Profile? = runCatching {
+        supabase.postgrest["profiles"]
+            .select { filter { eq("user_id", userId) }  }
+            .decodeSingle<Profile>()
+    }.getOrNull()
 }

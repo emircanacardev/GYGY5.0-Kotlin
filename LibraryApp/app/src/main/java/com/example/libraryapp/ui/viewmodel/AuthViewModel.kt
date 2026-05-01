@@ -2,11 +2,15 @@ package com.example.libraryapp.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.libraryapp.data.model.Profile
 import com.example.libraryapp.data.repository.AuthRepository
+import com.example.libraryapp.data.supabase.supabase
+import io.github.jan.supabase.postgrest.postgrest
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
+// Sistem bu 4ünden birinde olabilir.
 sealed class AuthState {
     object Idle : AuthState()
     object Loading : AuthState()
@@ -14,20 +18,35 @@ sealed class AuthState {
     data class Error(val message: String) : AuthState()
 }
 
-class AuthViewModel : ViewModel() {
 
+class AuthViewModel : ViewModel()
+{
     private val repository = AuthRepository()
 
     private val _authState = MutableStateFlow<AuthState>(AuthState.Idle)
-    val authState: StateFlow<AuthState> = _authState
+    val authState: StateFlow<AuthState> = _authState;
 
-    fun signIn(email: String, password: String) {
+    private val _profile = MutableStateFlow<Profile?>(null)
+    val profile: StateFlow<Profile?> = _profile;
+
+    fun signIn(email: String, password: String)
+    {
         viewModelScope.launch {
             _authState.value = AuthState.Loading
             repository
                 .signIn(email, password)
-                .onSuccess { result -> _authState.value = AuthState.Success("student") }
-                .onFailure { ex -> _authState.value = AuthState.Error(ex.message ?: "Sign in failed") }
+                .onSuccess {
+                    val userId = repository.getCurrentUserId();
+                    if(userId != null)
+                    {
+                        val profile = repository.getProfile(userId);
+                        _profile.value = profile;
+                        _authState.value = AuthState.Success("student")
+                    }else{
+                        _authState.value = AuthState.Error("Profil bulunamadı.")
+                    }
+                }
+                .onFailure { ex -> _authState.value = AuthState.Error(ex.message ?: "Giriş başarısız") }
         }
     }
 
@@ -35,14 +54,18 @@ class AuthViewModel : ViewModel() {
         email: String,
         password: String,
         fullName: String,
-        studentNo: String? // Öğrenci no eklendi
+        studentNo: String?
     ) {
         viewModelScope.launch {
             _authState.value = AuthState.Loading
             repository
-                .signUp(email, password, fullName, studentNo) // Repository'e iletiliyor
+                .signUp(email, password, fullName, studentNo)
                 .onSuccess { result -> _authState.value = AuthState.Success("student") }
-                .onFailure { ex -> _authState.value = AuthState.Error(ex.message ?: "Registration failed") }
+                .onFailure { ex -> _authState.value = AuthState.Error(ex.message ?: "Kayıt başarısız") }
         }
+    }
+
+    fun resetState() {
+        _authState.value = AuthState.Idle;
     }
 }

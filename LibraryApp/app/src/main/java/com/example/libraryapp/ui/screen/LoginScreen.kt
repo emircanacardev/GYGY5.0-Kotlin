@@ -14,6 +14,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -33,16 +34,24 @@ import io.github.jan.supabase.auth.Auth
 
 @Composable
 fun LoginScreen(
+    onNavigateToRegister: () -> Unit,
+    onLoginSuccess: (role:String) -> Unit,
+    authViewModel: AuthViewModel
 ) {
 
-    //LaunchedEffect() { }
-
-    val authViewModel: AuthViewModel = viewModel() // Navigasyon ekranına taşı.
     val authState by authViewModel.authState.collectAsState()
-
-
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+
+
+    // Yalnızca authState değişirse çalış, tüm recompositionlarda değil..
+    LaunchedEffect(authState) {
+        if(authState is AuthState.Success)
+        {
+            onLoginSuccess((authState as AuthState.Success).role)
+            authViewModel.resetState()
+        }
+    }
 
     Column(
         modifier = Modifier.fillMaxSize().padding(24.dp),
@@ -89,6 +98,12 @@ fun LoginScreen(
             }
         }
 
+
+        TextButton(
+            onClick = {onNavigateToRegister()})
+        {
+            Text("Hesabınız yok mu? Kayıt Ol")
+        }
 
         if(authState is AuthState.Success)
             Text("Giriş Yapıldı")
